@@ -2,7 +2,8 @@ namespace SpaceInvadersArmory;
 
 public class Weapon : IWeapon
 {
-    private static readonly Random random = new Random();
+    // Générateur aléatoire utilisé pour les tirs (injectable pour les tests)
+    private readonly Random random;
 
     public string Name { get; }
     public double MinDamage { get; }
@@ -15,7 +16,10 @@ public class Weapon : IWeapon
 
     public double AverageDamage => (MinDamage + MaxDamage) / 2;
 
-    public Weapon(string name, double minDamage, double maxDamage, EWeaponType type, int reloadTime)
+    /// <param name="random">Générateur aléatoire ; Random.Shared par défaut.
+    /// Passer un new Random(graine) rend les tirs reproductibles.</param>
+    public Weapon(string name, double minDamage, double maxDamage, EWeaponType type, int reloadTime,
+        Random? random = null)
     {
         Name = name;
         MinDamage = minDamage;
@@ -24,6 +28,23 @@ public class Weapon : IWeapon
         // Une arme explosive met deux fois plus de temps à recharger
         ReloadTime = type == EWeaponType.Explosive ? reloadTime * 2 : reloadTime;
         TimeBeforeReload = ReloadTime;
+        this.random = random ?? Random.Shared;
+    }
+
+    /// <summary>
+    /// Constructeur de copie : crée une nouvelle arme identique au modèle,
+    /// avec son propre compteur de rechargement (diapo 30).
+    /// </summary>
+    public Weapon(Weapon model)
+    {
+        Name = model.Name;
+        MinDamage = model.MinDamage;
+        MaxDamage = model.MaxDamage;
+        Type = model.Type;
+        // ReloadTime est recopié tel quel : le doublement "Explosive" est déjà appliqué au modèle
+        ReloadTime = model.ReloadTime;
+        TimeBeforeReload = model.TimeBeforeReload;
+        random = model.random;
     }
 
     public void DecrementReload()
@@ -34,9 +55,20 @@ public class Weapon : IWeapon
         }
     }
 
+    /// <summary>Tire si l'arme est rechargée, sinon renvoie 0.</summary>
     public double Shoot()
     {
-        if (!IsReady)
+        return Shoot(false);
+    }
+
+    /// <summary>
+    /// Tire avec l'arme et renvoie les dégâts infligés (0 si raté).
+    /// </summary>
+    /// <param name="ignoreReload">Vrai pour tirer même si l'arme n'est pas rechargée
+    /// (aptitude des Dart et des B-Wings).</param>
+    public double Shoot(bool ignoreReload)
+    {
+        if (!IsReady && !ignoreReload)
         {
             return 0;
         }

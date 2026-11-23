@@ -1,3 +1,5 @@
+using SpaceInvadersArmory;
+
 namespace Models;
 
 public class Player
@@ -6,12 +8,16 @@ public class Player
     private readonly string LastName;
     private string Alias;
     public Spaceship BattleShip { get; }
-    public Player(string firstName, string lastName, string alias)
+
+    /// <param name="armory">Armurerie fournissant les armes du vaisseau par défaut.</param>
+    /// <param name="random">Générateur aléatoire du vaisseau (graine fixe pour les tests).</param>
+    public Player(string firstName, string lastName, string alias, Armory armory, Random? random = null)
     {
         FirstName = firstName;
         LastName = lastName;
         Alias = alias;
-        BattleShip = new Spaceship("ViperMKII ", 10, 15);
+        // Spaceship est abstraite : le vaisseau par défaut est un ViperMKII
+        BattleShip = new ViperMKII(armory, random);
     }
 
     public override string ToString()

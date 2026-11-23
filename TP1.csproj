@@ -8,4 +8,9 @@
         <StartupObject>TP1.SpaceInvaders</StartupObject>
     </PropertyGroup>
 
+    <!-- Le projet de tests a son propre .csproj : on exclut ses sources de ce projet -->
+    <ItemGroup>
+        <Compile Remove="Tests/**" />
+    </ItemGroup>
+
 </Project>
